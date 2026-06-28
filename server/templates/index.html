@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bengaluru Property Valuation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1A2C; --ink-2:#102740; --panel:#EEF3F7; --panel-line:#D5E0E8;
+    --brass:#E0A23C; --brass-soft:#F4CB7E; --cyan:#5EA9C9;
+    --grid:rgba(94,169,201,.16); --text:#E2EBF3; --dim:#8AA0B6;
+    --ink-text:#16273A; --ink-dim:#5E7488; --err:#E07A6B;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;background:var(--ink);color:var(--text);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px 18px;
+    background-image:radial-gradient(circle at 18% 12%,#13314f 0%,transparent 55%),
+                     radial-gradient(circle at 88% 88%,#0e2138 0%,transparent 50%);
+  }
+  .shell{width:100%;max-width:980px}
+  .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;padding:0 4px}
+  .brandline{display:flex;align-items:center;gap:11px}
+  .compass{width:30px;height:30px;flex:none}
+  .compass circle,.compass line{stroke:var(--cyan);stroke-width:1.4;fill:none}
+  .compass .n{fill:var(--brass);stroke:none}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;letter-spacing:-.01em;line-height:1}
+  .sub{font-size:12px;color:var(--dim);letter-spacing:.04em;margin-top:3px}
+  .accred{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);text-align:right;line-height:1.5}
+  .accred b{color:var(--brass);font-weight:700}
+
+  .board{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(94,169,201,.22);
+    border-radius:var(--radius);overflow:hidden;box-shadow:0 30px 70px -30px rgba(0,0,0,.7)}
+
+  /* ---- input panel (spec sheet) ---- */
+  .spec{background:var(--panel);color:var(--ink-text);padding:30px 30px 34px}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-dim);display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--panel-line)}
+  .field{margin-bottom:18px}
+  label{display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--ink-text);margin-bottom:7px}
+  .hint{font-weight:400;color:var(--ink-dim);font-size:11px}
+  input[type=text],input[type=number]{
+    width:100%;padding:11px 13px;border:1px solid var(--panel-line);border-radius:9px;background:#fff;
+    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink-text);transition:border-color .15s,box-shadow .15s}
+  input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(94,169,201,.18)}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:42px;padding:10px 0;border:1px solid var(--panel-line);background:#fff;
+    border-radius:9px;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--ink-dim);
+    cursor:pointer;transition:all .14s}
+  .seg button:hover{border-color:var(--cyan)}
+  .seg button[aria-pressed=true]{background:var(--ink);color:var(--brass-soft);border-color:var(--ink)}
+  .estimate{width:100%;margin-top:8px;padding:14px;border:none;border-radius:10px;cursor:pointer;
+    background:var(--ink);color:var(--brass-soft);font-family:'Space Grotesk',sans-serif;font-weight:500;
+    font-size:15px;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:9px;
+    transition:transform .12s,background .2s}
+  .estimate:hover{background:#163454}
+  .estimate:active{transform:translateY(1px)}
+  .estimate svg{width:16px;height:16px}
+
+  /* ---- valuation panel ---- */
+  .value{position:relative;background:var(--ink-2);padding:30px;display:flex;flex-direction:column;
+    justify-content:center;min-height:430px;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:26px 26px}
+  .value::before{content:"";position:absolute;inset:14px;border:1px solid rgba(94,169,201,.18);
+    border-radius:6px;pointer-events:none}
+  .tick{position:absolute;width:13px;height:13px;border:1.5px solid var(--brass);pointer-events:none}
+  .tick.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+  .tick.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+  .tick.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+  .tick.br{bottom:8px;right:8px;border-left:0;border-top:0}
+  .vlabel{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:14px;position:relative;z-index:1}
+  .empty{position:relative;z-index:1;color:var(--dim);font-size:14px;line-height:1.6;max-width:240px}
+  .empty b{color:var(--text);font-weight:600;font-family:'Space Grotesk',sans-serif}
+  .result{position:relative;z-index:1;display:none}
+  .result.show{display:block;animation:rise .5s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .price{font-family:'Space Mono',monospace;font-weight:700;color:var(--brass);
+    font-size:clamp(40px,9vw,62px);line-height:.95;letter-spacing:-.02em;display:flex;align-items:baseline;gap:8px}
+  .price .unit{font-size:20px;color:var(--brass-soft);font-weight:400}
+  .inr{font-size:15px;color:var(--text);margin-top:12px;font-family:'Space Grotesk',sans-serif}
+  .meta{margin-top:22px;display:flex;gap:26px;border-top:1px solid rgba(94,169,201,.16);padding-top:16px}
+  .meta div span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+  .meta div b{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:500;color:var(--text)}
+  .err{position:relative;z-index:1;display:none;color:var(--err);font-size:13.5px;line-height:1.5;
+    border-left:2px solid var(--err);padding-left:12px}
+  .err.show{display:block}
+  .foot{text-align:center;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--dim);
+    margin-top:16px;letter-spacing:.05em}
+
+  @media(max-width:760px){
+    .board{grid-template-columns:1fr}
+    .value{order:-1;min-height:300px}
+    .masthead{flex-direction:column;align-items:flex-start;gap:8px}
+    .accred{text-align:left}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="masthead">
+      <div class="brandline">
+        <svg class="compass" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13"/><line x1="16" y1="3" x2="16" y2="29"/><line x1="3" y1="16" x2="29" y2="16"/><polygon class="n" points="16,6 18.5,16 16,14 13.5,16"/></svg>
+        <div>
+          <h1>Bengaluru Property Valuation</h1>
+          <div class="sub">Machine-learned price estimates across the city</div>
+        </div>
+      </div>
+      <div class="accred">model&nbsp;·&nbsp;random forest<br>test R²&nbsp;<b>0.89</b>&nbsp;·&nbsp;~₹15L avg. error</div>
+    </div>
+
+    <div class="board">
+      <!-- INPUT -->
+      <section class="spec">
+        <div class="eyebrow">Property details</div>
+
+        <div class="field">
+          <label for="loc">Locality <span class="hint">— start typing to search</span></label>
+          <input type="text" id="loc" list="locs" placeholder="e.g. Whitefield, Indira Nagar…" autocomplete="off">
+          <datalist id="locs"></datalist>
+        </div>
+
+        <div class="field">
+          <label for="sqft">Total area <span class="hint">— square feet</span></label>
+          <input type="number" id="sqft" placeholder="e.g. 1200" min="1">
+        </div>
+
+        <div class="field">
+          <label>Configuration <span class="hint">— bedrooms (BHK)</span></label>
+          <div class="seg" id="bhk"></div>
+        </div>
+
+        <div class="field">
+          <label>Bathrooms</label>
+          <div class="seg" id="bath"></div>
+        </div>
+
+        <button class="estimate" id="go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          Estimate value
+        </button>
+      </section>
+
+      <!-- OUTPUT -->
+      <section class="value">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="vlabel">Estimated market value</div>
+        <div class="empty" id="empty">Fill in the property details and press <b>Estimate value</b> to generate a price.</div>
+        <div class="err" id="err"></div>
+        <div class="result" id="result">
+          <div class="price"><span id="lakh">0</span><span class="unit">lakh ₹</span></div>
+          <div class="inr" id="inr"></div>
+          <div class="meta">
+            <div><span>Full amount</span><b id="full">—</b></div>
+            <div><span>Per sq.ft</span><b id="psf">—</b></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="foot">Estimates are indicative · trained on 7,300 cleaned Bengaluru listings</div>
+  </div>
+
+<script>
+const $ = s => document.querySelector(s);
+let bhk = 2, bath = 2;
+
+// build segmented controls
+function buildSeg(id, vals, getter, setter){
+  const box = $(id);
+  vals.forEach(v=>{
+    const b=document.createElement('button');
+    b.textContent = v===6?'6+':v;
+    b.setAttribute('aria-pressed', v===getter());
+    b.onclick=()=>{ setter(v); [...box.children].forEach(c=>c.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); };
+    box.appendChild(b);
+  });
+}
+buildSeg('#bhk',[1,2,3,4,5,6],()=>bhk,v=>bhk=v);
+buildSeg('#bath',[1,2,3,4,5,6],()=>bath,v=>bath=v);
+
+// populate locations
+fetch('/api/locations').then(r=>r.json()).then(d=>{
+  const dl=$('#locs');
+  d.locations.filter(l=>l!=='other').sort().forEach(l=>{
+    const o=document.createElement('option');
+    o.value=l.replace(/\b\w/g,c=>c.toUpperCase());
+    dl.appendChild(o);
+  });
+});
+
+const fmtINR = n => '₹'+Number(n).toLocaleString('en-IN');
+function countUp(el,target){
+  const dur=650, t0=performance.now();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ el.textContent=target.toFixed(2); return; }
+  function step(t){
+    const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3);
+    el.textContent=(target*e).toFixed(2);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function show(id){ ['#empty','#err','#result'].forEach(s=>$(s).classList.remove('show')); 
+  $('#empty').style.display = id==='#empty'?'block':'none';
+  if(id!=='#empty') $(id).classList.add('show'); }
+
+async function estimate(){
+  const location = $('#loc').value.trim().toLowerCase();
+  const sqft = parseFloat($('#sqft').value);
+  if(!sqft || sqft<=0){ $('#err').textContent='Enter the total area in square feet.'; show('#err'); return; }
+  try{
+    const res = await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({location,total_sqft:sqft,bhk,bath})});
+    const d = await res.json();
+    if(!res.ok){ $('#err').textContent=d.error||'Could not estimate.'; show('#err'); return; }
+    show('#result');
+    countUp($('#lakh'), d.estimated_price_lakh);
+    $('#inr').textContent = fmtINR(d.estimated_price_inr) + (location?'  ·  '+($('#loc').value.trim()):'');
+    $('#full').textContent = fmtINR(d.estimated_price_inr);
+    $('#psf').textContent = fmtINR(d.per_sqft);
+  }catch(e){ $('#err').textContent='Server unreachable. Is the Flask app running?'; show('#err'); }
+}
+$('#go').onclick = estimate;
+document.addEventListener('keydown',e=>{ if(e.key==='Enter') estimate(); });
+</script>
+</body>
+</html>
